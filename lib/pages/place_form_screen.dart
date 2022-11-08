@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/great_places.dart';
 import '../widgers/image_input.dart';
+import '../widgers/location_input.dart';
 
 class PlaceFormScreen extends StatefulWidget {
   const PlaceFormScreen({Key? key}) : super(key: key);
@@ -39,7 +40,7 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Place'),
+        title: const Text('Cadastrar Novo Local'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -58,6 +59,8 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
                     ),
                     const SizedBox(height: 10),
                     ImageInput(this._selectImage),
+                    const SizedBox(height: 10),
+                    LocationInput()
                   ],
                 ),
               ),
