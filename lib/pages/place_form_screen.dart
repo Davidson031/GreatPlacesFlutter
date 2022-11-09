@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/great_places.dart';
@@ -21,8 +22,18 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
 
   late File _pickedImage;
 
+  late LatLng _pickedPosition;
+
+  void _selectPosition(LatLng position) {
+    setState(() {
+      _pickedPosition = position;
+    });
+  }
+
   void _selectImage(File pickedImage) {
-    _pickedImage = pickedImage;
+    setState(() {
+      _pickedImage = pickedImage;
+    });
   }
 
   void _submitForm() {
@@ -31,7 +42,7 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
     }
 
     Provider.of<GreatPlaces>(context, listen: false)
-        .addPlace(_titleController.text, _pickedImage);
+        .addPlace(_titleController.text, _pickedImage, _pickedPosition);
 
     Navigator.of(context).pop();
   }
@@ -60,7 +71,7 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
                     const SizedBox(height: 10),
                     ImageInput(this._selectImage),
                     const SizedBox(height: 10),
-                    LocationInput()
+                    LocationInput(this._selectPosition),
                   ],
                 ),
               ),
