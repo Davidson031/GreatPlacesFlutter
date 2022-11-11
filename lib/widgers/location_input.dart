@@ -7,44 +7,54 @@ import 'package:great_places/utils/location_util.dart';
 import 'package:location/location.dart';
 
 class LocationInput extends StatefulWidget {
-  final Function onSelectLocation;
+  final Function onSelectPosition;
 
-  LocationInput(this.onSelectLocation);
+  const LocationInput(this.onSelectPosition, {Key? key}) : super(key: key);
 
   @override
   State<LocationInput> createState() => _LocationInputState();
 }
 
 class _LocationInputState extends State<LocationInput> {
-  var _previewImageUrl = null;
+  String? _previewImageUrl;
 
-  Future<void> _getCurrentUserLocation() async {
-    final locData = await Location().getLocation();
+  void _showPreview(double lat, double lng) {
     final staticMapImageUrl = LocationUtil.generateLocationPreviewImage(
-        latitude: locData.latitude, longitude: locData.longitude);
+      latitude: lat,
+      longitude: lng,
+    );
 
     setState(() {
       _previewImageUrl = staticMapImageUrl;
     });
   }
 
+  Future<void> _getCurrentUserLocation() async {
+    try {
+      final locData = await Location().getLocation();
+
+      _showPreview(locData.latitude!, locData.longitude!);
+      widget.onSelectPosition(LatLng(
+        locData.latitude!,
+        locData.longitude!,
+      ));
+    } catch (e) {
+      return;
+    }
+  }
+
   Future<void> _selectOnMap() async {
-    final LatLng selectedLocation =
-        await Navigator.of(context).push(MaterialPageRoute(
-      builder: (ctx) => MapScreen(),
-    ));
+    final LatLng? selectedPosition = await Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (ctx) => const MapScreen(),
+      ),
+    );
 
-    if (selectedLocation == null) return;
+    if (selectedPosition == null) return;
 
-    final staticMapImageUrl = LocationUtil.generateLocationPreviewImage(
-        latitude: selectedLocation.latitude,
-        longitude: selectedLocation.longitude);
-
-    setState(() {
-      _previewImageUrl = staticMapImageUrl;
-    });
-
-    widget.onSelectLocation(selectedLocation);
+    _showPreview(selectedPosition.latitude, selectedPosition.longitude);
+    widget.onSelectPosition(selectedPosition);
   }
 
   @override
@@ -55,12 +65,16 @@ class _LocationInputState extends State<LocationInput> {
           height: 170,
           width: double.infinity,
           alignment: Alignment.center,
-          decoration:
-              BoxDecoration(border: Border.all(width: 1, color: Colors.grey)),
+          decoration: BoxDecoration(
+            border: Border.all(
+              width: 1,
+              color: Colors.grey,
+            ),
+          ),
           child: _previewImageUrl == null
-              ? const Text('Local não informado')
+              ? const Text('Localização não informada!')
               : Image.network(
-                  _previewImageUrl,
+                  _previewImageUrl!,
                   fit: BoxFit.cover,
                   width: double.infinity,
                 ),
@@ -75,7 +89,7 @@ class _LocationInputState extends State<LocationInput> {
             ),
             TextButton.icon(
               icon: const Icon(Icons.map),
-              label: const Text('Selecione no mapa'),
+              label: const Text('Selecione no Mapa'),
               onPressed: _selectOnMap,
             ),
           ],
@@ -84,3 +98,4 @@ class _LocationInputState extends State<LocationInput> {
     );
   }
 }
+

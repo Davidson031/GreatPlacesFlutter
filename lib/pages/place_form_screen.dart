@@ -19,16 +19,8 @@ class PlaceFormScreen extends StatefulWidget {
 
 class _PlaceFormScreenState extends State<PlaceFormScreen> {
   final _titleController = TextEditingController();
-
-  late File _pickedImage;
-
-  late LatLng _pickedPosition;
-
-  void _selectPosition(LatLng position) {
-    setState(() {
-      _pickedPosition = position;
-    });
-  }
+  File? _pickedImage;
+  LatLng? _pickedPosition;
 
   void _selectImage(File pickedImage) {
     setState(() {
@@ -36,13 +28,26 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
     });
   }
 
-  void _submitForm() {
-    if (_titleController.text.isEmpty) {
-      return;
-    }
+  void _selectPosition(LatLng position) {
+    setState(() {
+      _pickedPosition = position;
+    });
+  }
 
-    Provider.of<GreatPlaces>(context, listen: false)
-        .addPlace(_titleController.text, _pickedImage, _pickedPosition);
+  bool _isValidForm() {
+    return _titleController.text.isNotEmpty &&
+        _pickedImage != null &&
+        _pickedPosition != null;
+  }
+
+  void _submitForm() {
+    if (!_isValidForm()) return;
+
+    Provider.of<GreatPlaces>(context, listen: false).addPlace(
+      _titleController.text,
+      _pickedImage!,
+      _pickedPosition!,
+    );
 
     Navigator.of(context).pop();
   }
@@ -51,7 +56,7 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cadastrar Novo Local'),
+        title: const Text('Novo Lugar'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -62,16 +67,16 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
                 padding: const EdgeInsets.all(10),
                 child: Column(
                   children: [
-                    TextFormField(
+                    TextField(
                       controller: _titleController,
                       decoration: const InputDecoration(
                         labelText: 'Título',
                       ),
                     ),
                     const SizedBox(height: 10),
-                    ImageInput(this._selectImage),
+                    ImageInput(_selectImage),
                     const SizedBox(height: 10),
-                    LocationInput(this._selectPosition),
+                    LocationInput(_selectPosition),
                   ],
                 ),
               ),
@@ -81,12 +86,16 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
             icon: const Icon(Icons.add),
             label: const Text('Adicionar'),
             style: ElevatedButton.styleFrom(
+              primary: Theme.of(context).colorScheme.secondary,
+              onPrimary: Colors.black,
+              elevation: 0,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            onPressed: _submitForm,
+            onPressed: _isValidForm() ? _submitForm : null,
           ),
         ],
       ),
     );
   }
 }
+
